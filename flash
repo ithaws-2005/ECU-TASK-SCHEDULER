@@ -1,0 +1,28 @@
+#!/usr/bin/bash
+arduino-cli board list
+
+echo ENTER BOARD NUMBER [2,3,AND SO ON]:
+read variable
+
+touch .information.txt
+arduino-cli board list>.information.txt
+core_col=$(awk -v row=$variable 'NR==row {print NF}' .information.txt)
+fqbn_col=$(($core_col-1))
+echo $fqbn_col
+
+
+echo ENTER FILE NAME:
+read file_name
+
+portname=$(awk -v row=$variable  'NR==row {print $1}' .information.txt)
+
+core_name=$(awk -v row1=$variable -v column1=$core_col 'NR==row1  {print $column1}' .information.txt)
+fqbn=$(awk -v row2=$variable -v column2=$fqbn_col 'NR==row2  {print $column2}' .information.txt)
+
+arduino-cli core install $core_name
+
+arduino-cli compile --fqbn $fqbn  $file_name
+arduino-cli upload -p $portname  --fqbn $fqbn  $file_name
+rm .information.txt
+
+
